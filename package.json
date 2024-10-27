@@ -1,0 +1,38 @@
+{
+  "name": "videosyncer",
+  "version": "1.0.0",
+  "description": "A program that allows the synchronization of live videos between multiple screens.",
+  "main": "./dist/index.js",
+  "bin": "./dist/index.js",
+  "scripts": {
+    "build": "tsc && copyfiles -u 1 src/*.html dist/",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "package": "npm run build && pkg . --debug"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^18.0.0",
+    "@types/ws": "^8.5.12",
+    "copyfiles": "^2.4.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [],
+  "author": "37074",
+  "license": "MIT",
+  "pkg": {
+    "targets": [
+      "node18-win-x64",
+      "node18-macos-x64"
+    ],
+    "assets": [
+      "dist/live.html"
+    ],
+    "scripts": "dist/**/*.js"
+  }
+}

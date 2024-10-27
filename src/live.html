@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Syncer Service</title>
+    <script>
+      const port =
+        window.location.port ||
+        (window.location.protocol === "https:" ? "443" : "80");
+
+      let ws;
+      let mediaElement;
+      let isMaster = false;
+
+      const connectWebSocket = () => {
+        ws = new WebSocket(`ws://localhost:${port}`);
+
+        ws.onopen = () => {
+          console.log("Connected to the WebSocket server");
+        };
+
+        ws.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+
+          if (message.command === "source") {
+            displayMedia(message.src);
+            if (message.role === "master") {
+              isMaster = true;
+              startSendingPlaybackTime();
+            } else {
+              isMaster = false;
+            }
+          } else if (message.command === "sync") {
+            handleSync(parseFloat(message.timestamp));
+          } else if (message.command === "newMaster") {
+            isMaster = false;
+            displayMedia(message.src);
+          }
+        };
+
+        ws.onclose = () => {
+          console.log("Disconnected from the WebSocket server");
+          reconnect();
+        };
+
+        ws.onerror = (error) => {
+          console.error(`WebSocket error: ${error}`);
+        };
+      };
+
+      const reconnect = () => {
+        setTimeout(() => {
+          console.log("Attempting to reconnect...");
+          connectWebSocket();
+        }, 100);
+      };
+
+      const displayMedia = (src) => {
+        const mediaTag = src.endsWith(".mp4") ? "video" : "img";
+        mediaElement = document.createElement(mediaTag);
+
+        if (mediaTag === "video") {
+          mediaElement.autoplay = true;
+          mediaElement.muted = true;
+          mediaElement.loop = true;
+          mediaElement.src = src;
+          mediaElement.play();
+        } else {
+          mediaElement.src = src;
+        }
+
+        mediaElement.style.width = "100vw";
+        mediaElement.style.height = "100vh";
+        mediaElement.style.objectFit = "cover";
+
+        document.body.innerHTML = "";
+        document.body.appendChild(mediaElement);
+      };
+
+      const startSendingPlaybackTime = () => {
+        setInterval(() => {
+          if (mediaElement && isMaster) {
+            const currentTime = mediaElement.currentTime;
+            ws.send(currentTime.toString());
+          }
+        }, 100);
+      };
+
+      const handleSync = (masterTime) => {
+        if (!mediaElement) return;
+        if (isMaster) return;
+
+        const receiverTime = mediaElement.currentTime;
+        const offset = masterTime - receiverTime;
+
+        if (Math.abs(offset) > 0.05) {
+          mediaElement.currentTime += offset;
+        }
+      };
+
+      connectWebSocket();
+    </script>
+
+    <style>
+      body {
+        padding: 0;
+        margin: 0;
+        display: block;
+        background-color: black;
+      }
+
+      video,
+      img {
+        width: 100vw;
+        height: 100vh;
+        border: none;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    asdasds
+  </body>
+</html>
