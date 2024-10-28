@@ -1,12 +1,21 @@
 import express, { Request, Response } from "express";
 import { RawData, WebSocket, WebSocketServer } from "ws";
-import http from "http";
+import http, { Server } from "http";
 import path from "path";
 import fs from "fs";
 import readline from "readline";
 
+function getDirPath() {
+  // @ts-ignore
+  if (process.pkg) {
+    return path.resolve(process.execPath + "/..");
+  } else {
+    return path.join(require.main ? require.main.path : process.cwd());
+  }
+}
+
 const createContentFolder = () => {
-  const dir = path.join(process.cwd(), "content");
+  const dir = path.join(getDirPath(), "content");
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);
     console.log("Created 'content' folder.");
@@ -74,18 +83,9 @@ const promptUserForPort = (selectedFile: string) => {
 let masterSocket: WebSocket | null = null;
 const receivers: WebSocket[] = [];
 
-function getDirPath() {
-  // @ts-ignore
-  if (process.pkg) {
-    return path.resolve(process.execPath + "/..");
-  } else {
-    return path.join(require.main ? require.main.path : process.cwd());
-  }
-}
-
 const startServer = (selectedFile: string, port: number) => {
   const app = express();
-  const httpServer = http.createServer(app);
+  const httpServer: Server = http.createServer(app);
   const wss = new WebSocketServer({ server: httpServer });
 
   app.get("/", (req: Request, res: Response) => {

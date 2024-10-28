@@ -57,12 +57,25 @@
       };
 
       const displayMedia = (src) => {
-        const mediaTag = src.endsWith(".mp4") ? "video" : "img";
+        let mediaTag;
+        src = src.toLowerCase();
+
+        if (src.endsWith(".mp4")) mediaTag = "video";
+        if (src.endsWith(".mov")) mediaTag = "video";
+        if (src.endsWith(".webm")) mediaTag = "video";
+        if (src.endsWith(".mkv")) mediaTag = "video";
+
+        if (src.endsWith(".png")) mediaTag = "img";
+        if (src.endsWith(".apng")) mediaTag = "img";
+        if (src.endsWith(".jgp")) mediaTag = "img";
+        if (src.endsWith(".jpeg")) mediaTag = "img";
+        if (src.endsWith(".webp")) mediaTag = "img";
+        if (src.endsWith(".png")) mediaTag = "img";
+
         mediaElement = document.createElement(mediaTag);
 
         if (mediaTag === "video") {
           mediaElement.autoplay = true;
-          mediaElement.muted = true;
           mediaElement.loop = true;
           mediaElement.src = src;
           mediaElement.play();
