@@ -56,7 +56,7 @@
         }, 100);
       };
 
-      const displayMedia = (src) => {
+      const displayMedia = async (src) => {
         let mediaTag;
         src = src.toLowerCase();
 
@@ -78,7 +78,18 @@
           mediaElement.autoplay = true;
           mediaElement.loop = true;
           mediaElement.src = src;
-          mediaElement.play();
+
+          const playMedia = async () => {
+            try {
+              await mediaElement.play();
+            } catch (_) {
+              setTimeout(() => {
+                playMedia();
+              }, 100);
+            }
+          };
+
+          await playMedia();
         } else {
           mediaElement.src = src;
         }
